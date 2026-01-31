@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="サウナ空き">
@@ -10,105 +10,251 @@
   <title>サウナ整作所 空き枠</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
       min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-attachment: fixed;
       color: #fff;
       padding: 20px;
-      padding-top: max(env(safe-area-inset-top), 20px);
+      padding-top: max(env(safe-area-inset-top, 20px), 20px);
+      padding-bottom: max(env(safe-area-inset-bottom, 20px), 20px);
     }
-    h1 { font-size: 1.5rem; text-align: center; margin-bottom: 10px; }
-    .update { text-align: center; color: #666; font-size: 0.8rem; margin-bottom: 15px; }
+
+    /* 背景のぼかし装飾 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(255,182,193,0.1) 0%, transparent 40%);
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      text-align: center;
+      margin-bottom: 8px;
+      font-weight: 700;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .update {
+      text-align: center;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-bottom: 20px;
+    }
+
+    /* グラスモーフィズム共通 */
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+    }
 
     /* 日付タブ */
     .date-tabs {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       overflow-x: auto;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
+      padding: 5px;
+      margin-bottom: 20px;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .date-tabs::-webkit-scrollbar { display: none; }
+
     .date-tab {
       flex-shrink: 0;
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 20px;
-      color: #aaa;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      color: rgba(255, 255, 255, 0.8);
       font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      text-align: center;
     }
-    .date-tab.active {
-      background: #4a90d9;
-      color: #fff;
-    }
-    .date-tab .weekday { font-size: 0.75rem; opacity: 0.8; }
-    .date-tab .day { font-weight: 600; }
-    .date-tab.has-slots { border: 2px solid #4CAF50; }
-    .date-tab.has-slots .day::after { content: ' ●'; color: #4CAF50; font-size: 0.6rem; }
 
-    .program {
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
+    .date-tab:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
-    .program-title {
+
+    .date-tab.active {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .date-tab .weekday {
+      font-size: 0.7rem;
+      opacity: 0.8;
+      margin-bottom: 2px;
+    }
+
+    .date-tab .day {
       font-weight: 600;
-      margin-bottom: 10px;
-      color: #ffd700;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
-    .slots { display: flex; flex-wrap: wrap; gap: 8px; }
-    .slot {
-      background: #4CAF50;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.95rem;
-      font-weight: 500;
+
+    .date-tab.has-slots {
+      border-color: rgba(134, 239, 172, 0.6);
+      box-shadow: 0 0 20px rgba(134, 239, 172, 0.2);
     }
-    .no-slots { color: #888; font-size: 0.9rem; }
-    .loading { text-align: center; padding: 40px; color: #888; }
-    .error { background: rgba(255,0,0,0.2); padding: 15px; border-radius: 12px; color: #ff6b6b; }
-    .total-summary {
-      background: rgba(76, 175, 80, 0.2);
-      border: 1px solid #4CAF50;
-      border-radius: 12px;
-      padding: 15px;
+
+    .date-tab.has-slots .day::after {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #86efac;
+      border-radius: 50%;
+      margin-left: 6px;
+      vertical-align: middle;
+      box-shadow: 0 0 10px #86efac;
+    }
+
+    /* サマリーカード */
+    .summary {
+      padding: 24px;
       margin-bottom: 20px;
       text-align: center;
     }
-    .total-summary.empty {
-      background: rgba(255, 107, 107, 0.2);
-      border-color: #ff6b6b;
+
+    .summary-count {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .total-count { font-size: 2rem; font-weight: bold; }
-    .refresh-btn {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      background: #4a90d9;
-      border: none;
-      border-radius: 12px;
-      color: white;
+
+    .summary-label {
       font-size: 1rem;
-      font-weight: 600;
-      margin-top: 20px;
-      cursor: pointer;
+      opacity: 0.9;
     }
-    .refresh-btn:active { background: #3a7bc8; }
+
+    .summary.has-slots {
+      background: linear-gradient(135deg, rgba(134, 239, 172, 0.3) 0%, rgba(74, 222, 128, 0.2) 100%);
+      border-color: rgba(134, 239, 172, 0.4);
+    }
+
+    .summary.no-slots {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    }
+
+    /* プログラムカード */
+    .program {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .program-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .program-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-size: 1.2rem;
+    }
+
+    .program-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+
+    .slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .slot {
+      background: linear-gradient(135deg, rgba(134, 239, 172, 0.4) 0%, rgba(74, 222, 128, 0.3) 100%);
+      border: 1px solid rgba(134, 239, 172, 0.5);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.2);
+    }
+
+    .no-slots {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+      padding: 8px 0;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 20px;
+      border-radius: 16px;
+      color: #fca5a5;
+    }
+
+    /* アニメーション */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .program {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .program:nth-child(1) { animation-delay: 0.1s; }
+    .program:nth-child(2) { animation-delay: 0.2s; }
+    .program:nth-child(3) { animation-delay: 0.3s; }
+    .program:nth-child(4) { animation-delay: 0.4s; }
   </style>
 </head>
 <body>
-  <h1>🧖 サウナ整作所</h1>
-  <div class="update" id="update"></div>
-  <div class="date-tabs" id="dateTabs"></div>
-  <div id="summary"></div>
-  <div id="content">
-    <div class="loading">読み込み中...</div>
+  <div class="container">
+    <h1>🧖 サウナ整作所</h1>
+    <div class="update" id="update"></div>
+    <div class="date-tabs" id="dateTabs"></div>
+    <div id="summary"></div>
+    <div id="content">
+      <div class="loading">読み込み中...</div>
+    </div>
   </div>
 
   <script>
@@ -116,14 +262,21 @@
     let selectedDate = null;
 
     const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
+    const ICONS = { 'ととのいルーム': '🌊', 'アドバンスルーム': '🔥' };
+
+    function getIcon(name) {
+      for (const [key, icon] of Object.entries(ICONS)) {
+        if (name.includes(key)) return icon;
+      }
+      return '🧖';
+    }
 
     function formatDateTab(dateStr) {
       const date = new Date(dateStr + 'T00:00:00+09:00');
       const month = date.getMonth() + 1;
       const day = date.getDate();
       const weekday = WEEKDAYS[date.getDay()];
-      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-      return { month, day, weekday, isWeekend };
+      return { month, day, weekday };
     }
 
     function hasSlots(data, dateStr) {
@@ -155,21 +308,26 @@
       const content = document.getElementById('content');
       const summaryEl = document.getElementById('summary');
 
-      // 合計空き枠数
       const totalSlots = data.programs.reduce((sum, p) => sum + (p.slotsByDate[dateStr] || []).length, 0);
+      const statusClass = totalSlots > 0 ? 'has-slots' : 'no-slots';
+
       summaryEl.innerHTML = `
-        <div class="total-summary ${totalSlots === 0 ? 'empty' : ''}">
-          <div class="total-count">${totalSlots}</div>
-          <div>${totalSlots > 0 ? '枠の空きあり！' : '空きなし'}</div>
+        <div class="summary glass ${statusClass}">
+          <div class="summary-count">${totalSlots}</div>
+          <div class="summary-label">${totalSlots > 0 ? '枠の空きあり' : '空きなし'}</div>
         </div>
       `;
 
-      // 各プログラム
       let html = '';
       for (const program of data.programs) {
         const slots = program.slotsByDate[dateStr] || [];
-        html += `<div class="program">
-          <div class="program-title">${program.name}</div>
+        const icon = getIcon(program.name);
+
+        html += `<div class="program glass">
+          <div class="program-header">
+            <div class="program-icon">${icon}</div>
+            <div class="program-title">${program.name}</div>
+          </div>
           <div class="slots">`;
 
         if (slots.length === 0) {
@@ -194,9 +352,8 @@
         globalData = await response.json();
 
         const updated = new Date(globalData.updated_at);
-        updateEl.textContent = `最終更新: ${updated.toLocaleTimeString('ja-JP')}`;
+        updateEl.textContent = `最終更新: ${updated.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
 
-        // 今日の日付を初期選択
         const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' });
         selectedDate = globalData.dates.includes(today) ? today : globalData.dates[0];
 
