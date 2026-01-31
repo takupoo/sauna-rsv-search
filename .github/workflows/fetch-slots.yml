@@ -1,0 +1,32 @@
+name: Fetch Sauna Slots
+
+on:
+  schedule:
+    # 毎日 6:00-23:00 JST の間、15分ごとに実行
+    - cron: '*/15 21-14 * * *'  # UTC (JST-9)
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch slots data
+        run: node scripts/fetch-slots.js
+
+      - name: Commit and push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/
+          git diff --staged --quiet || git commit -m "Update slots data"
+          git push
