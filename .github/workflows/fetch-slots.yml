@@ -2,8 +2,9 @@ name: Fetch Sauna Slots
 
 on:
   schedule:
-    # 毎日 6:00-23:00 JST の間、15分ごとに実行
-    - cron: '*/15 21-14 * * *'  # UTC (JST-9)
+    # JST 6:00-23:59 (UTC 21:00-14:59)
+    - cron: '*/15 21-23 * * *'  # UTC 21:00-23:59 = JST 6:00-8:59
+    - cron: '*/15 0-14 * * *'   # UTC 0:00-14:59 = JST 9:00-23:59
   workflow_dispatch:  # 手動実行も可能
 
 jobs:
